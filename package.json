@@ -1,0 +1,31 @@
+{
+  "name": "mapargs",
+  "version": "0.1.0",
+  "description": "map function parameters to types",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha"
+  },
+  "repository": "",
+  "keywords": [
+    "parameter",
+    "argument",
+    "type",
+    "validation",
+    "factory",
+    "handler"
+  ],
+  "contributors": ["jden <jason@denizac.org>"],
+  "author": "Agile Diagnosis <hello@agilediagnosis.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "~1.5.0",
+    "mocha": "~1.8.1"
+  },
+  "dependencies": {
+    "ski": "~1.0.0"
+  }
+}
