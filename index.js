@@ -94,6 +94,38 @@ function mapArgs (mapObj, fn) {
 
 }
 
+function toNamedParamFn(fn) {
+  var params = parseFnParams(fn)
+
+  if (params.length === 0) {
+    return fn
+  }
+
+  if (params.length === 1) {
+    return function (arg) {
+      return fn.call(this, arg[params[0]])
+    }
+  }
+
+  if (params.length === 2) {
+    return function (args) {
+      return fn.call(this, args[params[0]], args[params[1]])
+    }
+  }
+
+
+  if (params.length === 3) {
+    return function (args) {
+      return fn.call(this, args[params[0]], args[params[1]], args[params[2]])
+    }
+  }
+
+  return function (args) {
+    args = params.map(function (param) { return args[param] })
+    return fn.apply(this, args)
+  }
+}
+
 var boolean = function (x) {
   if (typeof x == 'string') {
     x = x.toLowerCase()
@@ -132,3 +164,4 @@ function parseFnParams (fn) {
 }
 
 module.exports = mapArgs;
+module.exports.toNamedParamFn = toNamedParamFn;

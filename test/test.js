@@ -104,4 +104,17 @@ describe('mapArgs', function () {
     })
   })
 
+  describe('toNamedParamFn', function () {
+    it('wraps a function to accept named parameters in an argument object', function () {
+      var add3 = function (a, b, c) {
+        return a + b + c
+      }
+
+      var named = mapArgs.toNamedParamFn(add3)
+
+      named({a: 1, b: 2, c: 3}).should.equal(6)
+
+    })
+  })
+
 })

@@ -36,6 +36,19 @@ Use this when wiring up user input to application logic. Separate your gnarly Ht
 `mapObj` should have property names corresponding to `fn`'s parameter names.
 The values should be either mapping functions to be applied to the matching argument or an `options` object.
 
+## mapArgs.toNamedParamFn(fn)
+
+A helper function, adapts a function `fn` to accept an object with parameter names as an argument. Example from the tests:
+
+    var add3 = function (a, b, c) {
+      return a + b + c
+    }
+
+    var named = mapArgs.toNamedParamFn(add3)
+
+    named({a: 1, b: 2, c: 3})
+    // => 6
+
 ## options
 
 ### $map: Function
@@ -51,6 +64,8 @@ A function returning `true` if the argument is valid, `false` otherwise. `mapArg
 If `true`, the parameter is optional. If a default is specified, it will be used if the argument is undefined. If there is no default specified and the parameter is not marked optional, an error will be thrown.
 
 ## a note about booleans
+
+We treat the built-in `Boolean` constructor liberally. Unlike native `Boolean`, not all non-empty strings evaluate to true. Instead, only strings which case-insensitively compare to `t`, `true`, `y`, or `yes` are true; otherwise they're false. And only numbers > 0 evaluate to true; otherwise they're false.
 
 ## running the tests
 
