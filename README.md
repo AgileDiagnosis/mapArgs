@@ -36,6 +36,8 @@ Use this when wiring up user input to application logic. Separate your gnarly Ht
 `mapObj` should have property names corresponding to `fn`'s parameter names.
 The values should be either mapping functions to be applied to the matching argument or an `options` object.
 
+Optionally, `fn` may be omitted. `mapArgs` will then return a function which will apply all of the validation and default logic and return an arguments object or throw an error.
+
 ## mapArgs.toNamedParamFn(fn)
 
 A helper function, adapts a function `fn` to accept an object with parameter names as an argument. Example from the tests:

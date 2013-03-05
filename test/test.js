@@ -117,4 +117,15 @@ describe('mapArgs', function () {
     })
   })
 
+  describe('no fn overload', function () {
+    it('maps and validate arguments only without mapping parameters to a function', function () {
+      var map = mapArgs({id: Number, name: {$optional: true}, day: {$default: 'Tues'}, coffee: {$valid: function (x) { return x === 'YES'}}})
+
+      var mapped = map({id: '2', coffee: 'YES'})
+
+      mapped.should.deep.equal({id: 2, coffee: 'YES', day: 'Tues'})
+
+    })
+  })
+
 })

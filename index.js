@@ -11,6 +11,7 @@ function collection () {
 }
 
 function mapArgs (mapObj, fn) {
+  if (!fn) return mapArgsObj(mapObj);
   var params = parseFnParams(fn)
   var required = collection()
   var optional = collection()
@@ -73,7 +74,7 @@ function mapArgs (mapObj, fn) {
         if (mapFn === Boolean) {
           mapFn = boolean;
         }
-        outArgs[i] = mapFn.call(null, arg)
+        outArgs[i] = mapFn(arg)
 
       } catch (e) {
         var err = new Error('Invalid argument: ' + param)
@@ -126,6 +127,78 @@ function toNamedParamFn(fn) {
   }
 }
 
+function mapArgsObj(mapObj) {
+  var required = collection()
+  var optional = collection()
+  var defaults = {}
+  var valid = {}
+
+  Object.keys(mapObj).forEach(function (param) {
+    var arg = mapObj[param]
+
+    if (typeof arg === 'function') {
+      required.add(param)
+      return;
+    }
+
+    if (arg.$optional) {
+      optional.add(param)
+    } else {
+      required.add(param)
+    }
+
+    if ('$valid' in arg) {
+      valid[param] = arg.$valid
+    }
+
+    if ('$default' in arg) {
+      defaults[param] = arg.$default
+    }
+
+    mapObj[param] = arg.$map
+
+  })
+
+  return function map(args) {
+
+    args = omap(args, function (arg, param) {
+
+      try{
+        var mapFn = mapObj[param] || I
+        if (mapFn === Boolean) {
+          mapFn = boolean;
+        }
+        arg = mapFn(arg)
+
+      } catch (e) {
+        var err = new Error('Invalid argument: ' + param)
+        err.inner = e
+        throw err
+      }
+      if (valid[param] && !valid[param](arg)) {
+        throw new Error('Invalid argument: ' + param)
+      }
+
+      return arg
+    })
+
+    for (var key in defaults) {
+      if (args[key] === void 0) {
+        args[key] = defaults[key]
+      }
+    }
+
+    required.forEach(function (param) {
+      if (!args.hasOwnProperty(param)) {
+        throw new Error('Missing required parameter: ' + param)
+      }
+    })
+
+    return args
+  }
+
+}
+
 var boolean = function (x) {
   if (typeof x == 'string') {
     x = x.toLowerCase()
@@ -151,6 +224,14 @@ function toObj(keys, vals) {
     obj[keys[i]] = vals[i]
   }
   return obj;
+}
+
+function omap(object, visitor) {
+  var o = {};
+  for (var key in object) {
+    o[key] = visitor(object[key], key)
+  }
+  return o;
 }
 
 /* regexs from Angular.js, (c) Google, MIT licensed */
