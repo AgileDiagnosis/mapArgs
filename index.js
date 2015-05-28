@@ -12,13 +12,14 @@ function collection () {
 }
 
 function mapArgs (fn, mapObj) {
-  if (typeof fn === 'object') { return mapArgsObj(fn) }
+  mapObj = mapObj || {}
   var params = fninfo(fn).params
   var required = collection()
   var optional = collection()
   var defaults = {}
   var valid = {}
 
+  // parse options
   Object.keys(mapObj).forEach(function (param) {
     var arg = mapObj[param]
 
@@ -37,32 +38,27 @@ function mapArgs (fn, mapObj) {
       valid[param] = arg.$valid
     }
 
-    defaults[param] = arg.$default
+    if ('$default' in arg) {
+      defaults[param] = arg.$default
+    }
 
     mapObj[param] = arg.$map
 
   })
 
   function map (args) {
-    if (args.length === 1) {
-      // determine if called with named or positional args
-      if (typeof args[0] === 'object' &&
-        required.every(function (param) { return args[0].hasOwnProperty(param) })) {
-        // called with named args
-        args = args[0]
-      } else {
-        // called with one positional arg
-        args = toObj(params, args)
-      }
-    } else {
-      args = toObj(params, args)
+    args = args[0] || {}
+
+    if (typeof args !== 'object') {
+      throw new Error('expecting single parameter: args object')
     }
 
     var outArgs = []
     params.forEach(function (param, i) {
-      if (!(args.hasOwnProperty(param) || optional[param])) {
+      if (!(param in args || param in defaults || param in optional.has)) {
         throw new Error('Missing required parameter: ' + param)
       }
+
       var arg = args[param]
 
       if (arg === void 0) {
@@ -95,6 +91,7 @@ function mapArgs (fn, mapObj) {
 
 }
 
+// undocumented, not for external use
 function toNamedParamFn (fn) {
   var params = fninfo(fn).params
 
@@ -207,14 +204,6 @@ var boolean = function (x) {
   return !!x
 }
 
-function toObj (keys, vals) {
-  var obj = {}
-  for (var i = 0; i < keys.length; i++) {
-    obj[keys[i]] = vals[i]
-  }
-  return obj
-}
-
 function omap (object, visitor) {
   var o = {}
   for (var key in object) {
@@ -224,5 +213,5 @@ function omap (object, visitor) {
 }
 
 module.exports = mapArgs
-module.exports.toNamedParamFn = toNamedParamFn
 module.exports.validate = mapArgsObj
+module.exports._toNamedParamFn = toNamedParamFn

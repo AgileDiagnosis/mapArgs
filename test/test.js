@@ -3,13 +3,13 @@ var chai = require('chai')
 chai.should()
 var expect = chai.expect
 
-var mapArgs = require('../index')
+var mapargs = require('../index')
 
-describe('mapArgs', function () {
+describe('mapargs', function () {
   it('works with named args', function () {
     var ID = function (id) { return id.toString(16).toUpperCase() }
 
-    var fn = mapArgs(function (id, name) {
+    var fn = mapargs(function (id, name) {
       return [id, name]
     }, {id: ID, name: String })
 
@@ -18,68 +18,70 @@ describe('mapArgs', function () {
     ret.should.deep.equal(['C0FFEE', 'Tom'])
   })
 
-  it('works with positional args', function () {
-    var fn = mapArgs(function (a, b) {
-      return [a, b]
-    }, {a: Number, b: String})
-
-    var ret = fn('23', false)
-
-    ret.should.deep.equal([23, 'false'])
-
-  })
-
-  it('can figure out unary functions called with named args', function () {
-    var fn = mapArgs(function (a) { return -a }, {a: Number})
-
-    fn({a: 2}).should.equal(-2)
-    fn(2).should.equal(-2)
-  })
-
   it('throws if any of the functions throws', function () {
     var throws = function () { throw new Error() }
 
-    var fn = mapArgs(function (a) {}, {a: throws })
+    var fn = mapargs(function (a) {}, {a: throws })
 
     expect(function () {
-      fn(12)
+      fn({a: 12})
     }).to.throw('Invalid argument: a')
   })
 
   describe('optional parameters', function () {
-    it('will ignore missing optional parameters', function () {
-      mapArgs(function (a, b) {}, {a: Number, b: {$optional: true, $map: Number}})
+    it('parameters are required unless $default or $optional', function () {
+      var fn = function (a, b, c) { return [a, b, c] }
+      var mapped = mapargs(fn, {b: {$default: 'B'}, c: {$optional: true}})
+
+      expect(function () {
+        mapped({})
+      }).to.throw(/Missing required parameter: a/)
+
+      mapped({a: 'A'}).should.deep.equal(['A', 'B', undefined])
+      mapped({a: 'a', b: 'b'}).should.deep.equal(['a', 'b', undefined])
+      mapped({a: 1, b: 2, c: 3}).should.deep.equal([1, 2, 3])
     })
 
     it('passes the value through if no mapping function is defined', function () {
-      var fn = mapArgs(function (a) { return a }, {a: {$optional: true}})
+      var fn = mapargs(function (a) { return a }, {a: {$optional: true}})
 
-      fn('234').should.equal('234')
-      fn() // should not throw
+      fn({a: '234'}).should.equal('234')
     })
 
     it('can have a default', function () {
-      var fn = mapArgs(function (a) {
+      var fn = mapargs(function (a) {
         return a
       }, {a: {$default: 'foo'}})
 
-      fn('boo').should.equal('boo')
+      fn({a: 'boo'}).should.equal('boo')
       fn().should.equal('foo')
+    })
+
+    it('parameters are required by default', function () {
+      var fn = mapargs(function (a, b) {
+        return [a, b]
+      }, {b: {$default: 'B'}})
+
+      fn({a: 'A'}).should.deep.equal(['A', 'B'])
+      expect(function () {
+        fn()
+      }).to.throw(/Missing required parameter: a/)
+
     })
   })
 
   describe('boolean', function () {
     it('supports liberal boolean input', function () {
-      var fn = mapArgs(function (a) { return a }, {a: Boolean})
+      var fn = mapargs(function (a) { return a }, {a: Boolean})
 
       var t = [true, 1, 'true', 't', 'TRUE', 'trUE', 'yes', 'Y', 'y', 'YES']
       t.forEach(function (val) {
-        fn(val).should.equal(true)
+        fn({a: val}).should.equal(true)
       })
 
       var f = [false, 0, -1, 'f', 'F', 'false', 'FAlse', 'n', 'NO', 'N']
       f.forEach(function (val) {
-        fn(val).should.equal(false)
+        fn({a: val}).should.equal(false)
       })
 
     })
@@ -89,13 +91,13 @@ describe('mapArgs', function () {
     var isEven = function (x) { return x % 2 === 0 }
 
     it('passes the value through if the predicate returns true', function () {
-      var fn = mapArgs(function (a) { return a }, {a: {$valid: isEven }})
-      fn(2).should.equal(2)
+      var fn = mapargs(function (a) { return a }, {a: {$valid: isEven }})
+      fn({a: 2}).should.equal(2)
     })
     it('throws if the predicate returns false', function () {
-      var fn = mapArgs(function (a) { return a }, {a: {$valid: isEven }})
+      var fn = mapargs(function (a) { return a }, {a: {$valid: isEven }})
       expect(function () {
-        fn(1)
+        fn({a: 1})
       }).to.throw('Invalid argument: a')
     })
   })
@@ -106,7 +108,7 @@ describe('mapArgs', function () {
         return a + b + c
       }
 
-      var named = mapArgs.toNamedParamFn(add3)
+      var named = mapargs._toNamedParamFn(add3)
 
       named({a: 1, b: 2, c: 3}).should.equal(6)
 
@@ -115,7 +117,7 @@ describe('mapArgs', function () {
 
   describe('.validate', function () {
     it('maps and validate arguments only without mapping parameters to a function', function () {
-      var map = mapArgs.validate({id: Number, name: {$optional: true}, day: {$default: 'Tues'}, coffee: {$valid: function (x) { return x === 'YES'}}})
+      var map = mapargs.validate({id: Number, name: {$optional: true}, day: {$default: 'Tues'}, coffee: {$valid: function (x) { return x === 'YES'}}})
 
       var mapped = map({id: '2', coffee: 'YES'})
 
