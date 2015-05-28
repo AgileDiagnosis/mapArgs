@@ -1,4 +1,5 @@
 var I = require('ski/i')
+var fninfo = require('fninfo')
 
 function collection () {
   var arr = []
@@ -7,12 +8,12 @@ function collection () {
     arr.push(x)
     arr.has[x] = true
   }
-  return arr;
+  return arr
 }
 
-function mapArgs (mapObj, fn) {
-  if (!fn) return mapArgsObj(mapObj);
-  var params = parseFnParams(fn)
+function mapArgs (fn, mapObj) {
+  if (typeof fn === 'object') { return mapArgsObj(fn) }
+  var params = fninfo(fn).params
   var required = collection()
   var optional = collection()
   var defaults = {}
@@ -23,7 +24,7 @@ function mapArgs (mapObj, fn) {
 
     if (typeof arg === 'function') {
       required.add(param)
-      return;
+      return
     }
 
     if (arg.$optional) {
@@ -42,8 +43,7 @@ function mapArgs (mapObj, fn) {
 
   })
 
-
-  function map(args) {
+  function map (args) {
     if (args.length === 1) {
       // determine if called with named or positional args
       if (typeof args[0] === 'object' &&
@@ -58,7 +58,7 @@ function mapArgs (mapObj, fn) {
       args = toObj(params, args)
     }
 
-    var outArgs = [];
+    var outArgs = []
     params.forEach(function (param, i) {
       if (!(args.hasOwnProperty(param) || optional[param])) {
         throw new Error('Missing required parameter: ' + param)
@@ -69,10 +69,10 @@ function mapArgs (mapObj, fn) {
         arg = defaults[param]
       }
 
-      try{
+      try {
         var mapFn = mapObj[param] || I
         if (mapFn === Boolean) {
-          mapFn = boolean;
+          mapFn = boolean
         }
         outArgs[i] = mapFn(arg)
 
@@ -95,8 +95,8 @@ function mapArgs (mapObj, fn) {
 
 }
 
-function toNamedParamFn(fn) {
-  var params = parseFnParams(fn)
+function toNamedParamFn (fn) {
+  var params = fninfo(fn).params
 
   if (params.length === 0) {
     return fn
@@ -114,7 +114,6 @@ function toNamedParamFn(fn) {
     }
   }
 
-
   if (params.length === 3) {
     return function (args) {
       return fn.call(this, args[params[0]], args[params[1]], args[params[2]])
@@ -127,7 +126,7 @@ function toNamedParamFn(fn) {
   }
 }
 
-function mapArgsObj(mapObj) {
+function mapArgsObj (mapObj) {
   var required = collection()
   var optional = collection()
   var defaults = {}
@@ -138,7 +137,7 @@ function mapArgsObj(mapObj) {
 
     if (typeof arg === 'function') {
       required.add(param)
-      return;
+      return
     }
 
     if (arg.$optional) {
@@ -159,14 +158,12 @@ function mapArgsObj(mapObj) {
 
   })
 
-  return function map(args) {
-
+  return function map (args) {
     args = omap(args, function (arg, param) {
-
-      try{
+      try {
         var mapFn = mapObj[param] || I
         if (mapFn === Boolean) {
-          mapFn = boolean;
+          mapFn = boolean
         }
         arg = mapFn(arg)
 
@@ -200,49 +197,32 @@ function mapArgsObj(mapObj) {
 }
 
 var boolean = function (x) {
-  if (typeof x == 'string') {
+  if (typeof x === 'string') {
     x = x.toLowerCase()
-    return (x == 't' || x == 'true' || x == 'y' || x == 'yes')
+    return (x === 't' || x === 'true' || x === 'y' || x === 'yes')
   }
-  if (typeof x == 'number') {
+  if (typeof x === 'number') {
     return x > 0
   }
   return !!x
 }
 
-// var builtins = [String, Number, Array, Boolean, RegExp, Date, Object]
-// function builtinify(fn) {
-//   var i = builtins.indexOf(fn);
-//   if (i > -1) {
-//     return function (x) { }
-//   }
-// }
-
-function toObj(keys, vals) {
+function toObj (keys, vals) {
   var obj = {}
-  for (var i = 0; i < keys.length; i++){
+  for (var i = 0; i < keys.length; i++) {
     obj[keys[i]] = vals[i]
   }
-  return obj;
+  return obj
 }
 
-function omap(object, visitor) {
-  var o = {};
+function omap (object, visitor) {
+  var o = {}
   for (var key in object) {
     o[key] = visitor(object[key], key)
   }
-  return o;
+  return o
 }
 
-/* regexs from Angular.js, (c) Google, MIT licensed */
-var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
-var FN_ARG_SPLIT = /\s*,\s*/;
-var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-function parseFnParams (fn) {
-  var src = fn.toString().replace(STRIP_COMMENTS, '');
-  var args = src.match(FN_ARGS)[1].split(FN_ARG_SPLIT);
-  return args;
-}
-
-module.exports = mapArgs;
-module.exports.toNamedParamFn = toNamedParamFn;
+module.exports = mapArgs
+module.exports.toNamedParamFn = toNamedParamFn
+module.exports.validate = mapArgsObj

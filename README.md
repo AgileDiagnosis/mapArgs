@@ -1,4 +1,4 @@
-# mapArgs
+# mapargs
 map function parameters to types
 
 ## installation
@@ -11,12 +11,12 @@ Stop manually writing mapping and validation logic. Stop it right now. It's brit
 
     var mapArgs = require('mapargs')
 
-    var listDocuments = mapArgs({
+    var listDocuments = mapArgs(function (authorId, skip, limit) {
+      // do stuff
+    }, {
       authorId: Number,
       skip: {$map: Number, $optional: true, $default: 0},
       limit: {$map: Number, $optional: true, $default: 100}
-    }, function (authorId, skip, limit) {
-      // do stuff
     })
 
 This returns a function which we can call either with positional arguments (like the original), or named arguments by passing in an object with property names matching the parameter names.
@@ -31,14 +31,18 @@ Use this when wiring up user input to application logic. Separate your gnarly Ht
 
 ## api
 
-### mapArgs(mapObj, fn)
+### mapArgs(fn: Function, mapObj?: Object) => Function
+
+Returns a function which accepts named arguments and (optionally) has validation and defaults specified in mapObj
 
 `mapObj` should have property names corresponding to `fn`'s parameter names.
 The values should be either mapping functions to be applied to the matching argument or an `options` object.
 
-Optionally, `fn` may be omitted. `mapArgs` will then return a function which will apply all of the validation and default logic and return an arguments object or throw an error.
+## mapArgs.validate(mapObj: Object) => Function
 
-## mapArgs.toNamedParamFn(fn)
+Returns a function which will apply all of the validation and default logic and return an arguments object or throw an error.
+
+## mapArgs.toNamedParamFn(fn: Function) => Function
 
 A helper function, adapts a function `fn` to accept an object with parameter names as an argument. Example from the tests:
 
@@ -78,8 +82,10 @@ change to package root directory
 
 ## contributors
 
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+
 jden <jason@denizac.org>
 
 ## license
 
-MIT. (c) 2013 Agile Diagnosis <hello@agilediagnosis>. See LICENSE.md
+ISC. (c) 2015 AgileMD, Inc <hello@agilemd.com>. See LICENSE.md

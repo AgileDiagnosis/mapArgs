@@ -1,15 +1,11 @@
 {
   "name": "mapargs",
   "version": "0.3.0",
-  "description": "map function parameters to types",
-  "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
+  "description": "map function parameters to named options with optional validation",
   "scripts": {
-    "test": "node node_modules/mocha/bin/mocha"
+    "test": "standard && mocha"
   },
-  "repository": "git@github.com:AgileDiagnosis/mapArgs.git",
+  "repository": "git@github.com:jden/mapargs.git",
   "keywords": [
     "parameter",
     "argument",
@@ -18,14 +14,18 @@
     "factory",
     "handler"
   ],
-  "contributors": ["jden <jason@denizac.org>"],
-  "author": "Agile Diagnosis <hello@agilediagnosis.com>",
-  "license": "MIT",
+  "contributors": [
+    "jden <jason@denizac.org>"
+  ],
+  "author": "AgileMD, Inc. <hello@agilemd.com>",
+  "license": "ISC",
   "devDependencies": {
-    "chai": "~1.5.0",
-    "mocha": "~1.8.1"
+    "chai": "^2.3.0",
+    "mocha": "^2.2.5",
+    "standard": "^3.11.1"
   },
   "dependencies": {
+    "fninfo": "^2.1.0",
     "ski": "~1.0.0"
   }
 }
