@@ -1,6 +1,6 @@
 {
   "name": "mapargs",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "map function parameters to named options with optional validation",
   "scripts": {
     "test": "standard && mocha"
